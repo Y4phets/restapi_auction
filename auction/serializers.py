@@ -24,4 +24,4 @@ class BidCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bid
-        fields = ("user_id", "auction_id", "bid_time", "rate",)
+        fields = ("user", "auction", "bid_time", "rate",)

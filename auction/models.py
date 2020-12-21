@@ -12,7 +12,8 @@ class Auction(models.Model):
     finish_rate = models.PositiveIntegerField("Конечная ставка", default=0,
                                               help_text="указывать сумму в долларах")
     expiration_date = models.DateTimeField("Дата завершения", null=True, blank=True)
-    author = models.ForeignKey(User, verbose_name="автор", on_delete=models.CASCADE)
+    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE)
+    winner = models.ForeignKey(User, verbose_name="Победитель", on_delete=models.CASCADE, related_name="bid_winner")
 
     def __str__(self):
         return self.name
@@ -23,8 +24,8 @@ class Auction(models.Model):
 
 
 class Bid(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    auction_id = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     bid_time = models.DateTimeField(auto_now_add=True)
     rate = models.PositiveIntegerField("Cтавка", default=0,
                                        help_text="указывать сумму в долларах")
