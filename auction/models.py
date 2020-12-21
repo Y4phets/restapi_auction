@@ -31,5 +31,5 @@ class Bid(models.Model):
                                        help_text="указывать сумму в долларах")
 
     def __str__(self):
-        return "USER_ID:" + str(self.user_id) + " AUCTION_ID:" + \
-               str(self.auction_id) + " " + str(self.bid_time)
+        return "USER:" + str(self.user.name) + " AUCTION:" + \
+               str(self.auction.name) + " " + str(self.bid_time)
