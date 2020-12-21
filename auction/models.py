@@ -6,7 +6,7 @@ class Auction(models.Model):
     """Аукцион"""
     name = models.CharField("Название", max_length=150)
     description = models.TextField("Описание")
-    active = models.BooleanField(default=False, verbose_name="")
+    active = models.BooleanField(default=True, verbose_name="")
     initial_rate = models.PositiveIntegerField("Начальная ставка", default=0,
                                                help_text="указывать сумму в долларах")
     finish_rate = models.PositiveIntegerField("Конечная ставка", default=0,

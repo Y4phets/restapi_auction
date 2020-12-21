@@ -11,6 +11,22 @@ class AuctionSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "description", "expiration_date", "initial_rate",)
 
 
+class AuctionDetailFinishedSerializer(serializers.ModelSerializer):
+    """Просмотр завершённых аукционов"""
+    winner_name = serializers.SerializerMethodField()
+    winner_email = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Auction
+        fields = ("finish_rate", "winner_name", "winner_email",)
+
+    def get_winner_name(self, obj):
+        return obj.winner.username
+
+    def get_winner_email(self, obj):
+        return obj.winner.email
+
+
 class AuctionDetailSerializer(serializers.ModelSerializer):
     """Аукцион"""
 

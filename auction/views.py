@@ -7,11 +7,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST
 
 from .models import Auction, Bid
-from .serializers import AuctionSerializer, AuctionDetailSerializer, BidCreateSerializer
+from .serializers import AuctionSerializer, AuctionDetailSerializer, BidCreateSerializer, \
+    AuctionDetailFinishedSerializer
 
 logger = logging.getLogger("Auction")
 
@@ -47,6 +49,17 @@ class AuctionView(viewsets.ModelViewSet):
         return self.update(request, *args, **kwargs)
 
 
+class AuctionDetailFinishedView(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AuctionDetailFinishedSerializer
+    queryset = Auction.objects.filter(active=False)
+
+    def retrieve(self, request, pk=None):
+        auction = get_object_or_404(self.queryset, pk=pk)
+        serializer = AuctionDetailFinishedView(auction)
+        return Response(serializer.data)
+
+
 class BidView(generics.CreateAPIView):
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ("user", "auction", "bid_time")
@@ -56,7 +69,10 @@ class BidView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         data = serializer.data
+        rate = data["rate"]
+
         auction = Auction.objects.get(pk=data["auction"])
         latest_bid = Bid.objects.filter(auction_id=auction.id).order_by('bid_time').last()
 
@@ -70,11 +86,12 @@ class BidView(generics.CreateAPIView):
             auction.expiration_date += timedelta(minutes=2)
             auction.save()
 
-        if latest_bid.rate > data["rate"]:
+        if latest_bid.rate > rate:
             return Response(data={'results': "Rate lower than current"},
                             status=HTTP_400_BAD_REQUEST)
         else:
             auction.winner = User.objects.get(id=data["user"])
+            auction.finish_rate = rate
             auction.save()
 
         self.perform_create(serializer)
